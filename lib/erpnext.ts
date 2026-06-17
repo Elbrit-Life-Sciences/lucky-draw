@@ -1,41 +1,41 @@
 import { StoredEntry } from "./types";
 
 /**
- * Pushes a lucky-draw entry into ERPNext (UAT) by creating a record in the
- * DocType backing your form_pro form.
+ * Pushes a lucky-draw entry into ERPNext by creating a record in the DocType
+ * that backs the Forms Pro "Lucky Draw" form (route forms_pro_B4sebvHN). Forms
+ * Pro auto-generates a submission DocType per form; for this form it is
+ * "formspro_ragbwi000001", so records created here show up under the form's
+ * responses in ERPNext.
  *
  * Connection is env-driven (set these in Netlify → Site settings → Environment
  * variables, or a local .env.local — never commit them):
- *   ERP_URL          e.g. https://uat.elbrit.org   (base URL, no trailing /api)
- *   ERP_API_KEY      ERPNext API key
+ *   ERP_URL          https://erp.elbrit.org   (base URL, no trailing /api)
+ *   ERP_API_KEY      ERPNext API key  (of a user allowed to create the DocType)
  *   ERP_API_SECRET   ERPNext API secret
- *   ERP_DOCTYPE      the DocType your form_pro form writes to
- *                    (defaults to "Lucky Draw Entry")
+ *   ERP_DOCTYPE      submission DocType the form writes to
+ *                    (defaults to "formspro_ragbwi000001")
  *
- * FIELD MAPPING: the keys below must match the fieldnames in your form_pro form
- * /DocType. Defaults follow Frappe's auto-generated fieldname convention
- * (label lower-cased, spaces → underscores). If your form uses different
- * fieldnames, just adjust the keys here.
+ * FIELD MAPPING below matches the fieldnames defined on the Forms Pro form.
  */
 export async function sendToErpnext(
   entry: StoredEntry
 ): Promise<{ ok: boolean; skipped?: boolean; detail?: string }> {
-  const url = process.env.ERP_URL;
+  const url = process.env.ERP_URL || "https://erp.elbrit.org";
   const key = process.env.ERP_API_KEY;
   const secret = process.env.ERP_API_SECRET;
-  const doctype = process.env.ERP_DOCTYPE || "Lucky Draw Entry";
+  const doctype = process.env.ERP_DOCTYPE || "formspro_ragbwi000001";
 
-  if (!url || !key || !secret) {
-    return { ok: false, skipped: true, detail: "ERP env not configured" };
+  if (!key || !secret) {
+    return { ok: false, skipped: true, detail: "ERP API key/secret not configured" };
   }
 
   const payload: Record<string, unknown> = {
     full_name: entry.name,
-    email: entry.email,
-    mobile_no: entry.phone,
+    email_address: entry.email,
+    mobile_number: entry.phone,
     specialisation: entry.specialisation,
     city: entry.city,
-    clinic_name: entry.clinic,
+    clinic_hospital_name: entry.clinic,
     lucky_number: entry.luckyNumber,
   };
 
