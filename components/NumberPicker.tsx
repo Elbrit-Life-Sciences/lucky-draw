@@ -22,6 +22,7 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 export default function NumberPicker({ onLock }: NumberPickerProps) {
   const [inp, setInp] = useState("");
   const [spinning, setSpinning] = useState(false);
+  const [locked, setLocked] = useState(false);
   const dA = useRef<HTMLDivElement>(null);
   const dB = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -84,11 +85,12 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
   }
 
   function lock() {
-    if (!valid || spinning) return;
-    // full-page confetti rain to celebrate the pick
+    if (!valid || spinning || locked) return;
+    // show the "locked in" popup + full-page confetti, then hold long enough
+    // for the rain to play before sliding to the form
+    setLocked(true);
     fireConfetti();
-    // let the confetti start raining before sliding to the form
-    setTimeout(() => onLock(n), 280);
+    setTimeout(() => onLock(n), 1500);
   }
 
   function spin() {
@@ -217,12 +219,23 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
       </div>
 
       <button
-        className={`btn-primary pick-anim ${valid && !spinning ? "on" : "off"}`}
+        className={`btn-primary pick-anim ${valid && !spinning && !locked ? "on" : "off"}`}
         onClick={lock}
         type="button"
       >
         Lock in my number &rarr;
       </button>
+
+      {locked && (
+        <div className="lock-pop">
+          <div className="lock-pop-card">
+            <span className="lock-pop-badge">Lucky number</span>
+            <div className="lock-pop-num">{n}</div>
+            <div className="lock-pop-txt">Locked in! 🎉</div>
+            <div className="lock-pop-sub">Your lucky number is secured</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
