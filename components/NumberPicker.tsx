@@ -151,7 +151,7 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
               [elA, elB],
               {
                 color: "#fff",
-                textShadow: "0 0 18px rgba(225,37,27,.85), 0 0 38px rgba(225,37,27,.38)",
+                textShadow: "0 0 18px rgba(225,27,34,.85), 0 0 38px rgba(225,27,34,.38)",
                 duration: 0.4,
                 onComplete: () => {
                   setInp(target.toString());

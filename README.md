@@ -34,7 +34,7 @@ Open `app/api/entry/route.ts` — there is a commented `ERP HOOK` block with a r
 
 The Elbrit logo is a vector recreation in `components/ElbritLogo.tsx` (sharp at any size). To use the official raster asset instead, drop it in `public/` and swap the `<svg>` for `next/image`.
 
-Brand colours: red `#E1251B`, navy `#1E2A5E`.
+Brand colours: red `#E11B22`, navy `#16235C`. Aurora theme — deep-navy base (`#05070f`) with drifting red/blue/violet glow blobs.
 
 ## Tech
 

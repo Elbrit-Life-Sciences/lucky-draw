@@ -1,14 +1,14 @@
 import { gsap } from "gsap";
 
 const CONFETTI_COLORS = [
-  "#E1251B",
+  "#E11B22",
   "#FFD700",
   "#ffffff",
-  "#1E2A5E",
-  "#FF6666",
+  "#4f7bff",
+  "#965aff",
+  "#ff8e93",
   "#FFE066",
-  "#ff9999",
-  "#c0c0c0",
+  "#16235C",
 ];
 
 /**
