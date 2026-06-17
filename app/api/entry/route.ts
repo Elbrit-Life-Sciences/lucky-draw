@@ -4,6 +4,7 @@ import os from "os";
 import path from "path";
 import { LuckyDrawEntry, StoredEntry } from "@/lib/types";
 import { sendToErpnext } from "@/lib/erpnext";
+import { sendRavenNotification } from "@/lib/raven";
 
 // Candidate storage dirs, tried in order. The project dir works locally; on a
 // read-only serverless host (e.g. Vercel) it falls back to the OS temp dir.
@@ -90,7 +91,14 @@ export async function POST(req: Request) {
     console.error("ERP_SUBMIT_FAILED", erp.detail);
   }
 
-  return NextResponse.json({ ok: true, id: stored.id, persisted, erp: erp.ok });
+  // Notify the Raven "pmt" channel. Non-blocking: a failure here never stops
+  // the user completing their entry.
+  const raven = await sendRavenNotification(stored);
+  if (!raven.ok && !raven.skipped) {
+    console.error("RAVEN_NOTIFY_FAILED", raven.detail);
+  }
+
+  return NextResponse.json({ ok: true, id: stored.id, persisted, erp: erp.ok, raven: raven.ok });
 }
 
 export async function GET() {
