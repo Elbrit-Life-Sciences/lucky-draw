@@ -43,7 +43,22 @@ button {
   cursor: pointer;
 }
 
-/* ─── Aurora background ─────────────────────────────────── */
+/* ─── 3D scene backdrop (Elbrit Trendo background) ──────── */
+.scene-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 700px at 72% 20%, rgba(225, 37, 27, 0.16), transparent 60%),
+    radial-gradient(1000px 800px at 12% 80%, rgba(30, 42, 94, 0.5), transparent 60%),
+    linear-gradient(180deg, #07090f 0%, #0b0f1d 55%, #07090f 100%);
+}
+.scene-canvas canvas { display: block; }
+
+/* ─── Aurora background (legacy, unused) ────────────────── */
 .bg {
   position: fixed;
   inset: 0;
@@ -479,6 +494,74 @@ h1 span { color: var(--red); }
   cursor: pointer;
 }
 .fsel option { background: #101740; color: #fff; }
+
+/* ─── White logo chip (Elbrit Trendo brand mark) ────────── */
+.elbrit-chip {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  padding: 0.32rem 0.55rem;
+  border-radius: 9px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+.elbrit-chip img { display: block; width: auto; }
+
+/* ─── Custom dropdown (replaces native <select>) ────────── */
+.csel { position: relative; width: 100%; }
+.csel-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 13px;
+  font-size: 16px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.csel-btn:focus-visible { outline: none; border-color: var(--red); background: rgba(225, 27, 34, 0.06); }
+.csel.invalid .csel-btn { border-color: rgba(255, 80, 80, 0.55); }
+.csel-ph { color: rgba(255, 255, 255, 0.2); }
+.csel-chev {
+  flex: none;
+  width: 10px; height: 7px;
+  background: rgba(255, 255, 255, 0.4);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transition: transform 0.2s ease;
+}
+.csel-chev.up { transform: rotate(180deg); }
+.csel-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  max-height: min(280px, 50vh);
+  overflow-y: auto;
+  padding: 6px;
+  list-style: none;
+  background: #0c1126;
+  border: 1.5px solid var(--line);
+  border-radius: 13px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.csel-opt {
+  padding: 12px 12px;
+  border-radius: 9px;
+  font-size: 15px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.csel-opt:hover { background: rgba(255, 255, 255, 0.08); }
+.csel-opt.sel { background: rgba(225, 27, 34, 0.22); }
 .ferr {
   display: block;
   font-size: 11px;

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import ElbritLogo from "./ElbritLogo";
+import Select from "./Select";
 import { LuckyDrawEntry, SPECIALISATIONS } from "@/lib/types";
 
 interface WizardFormProps {
@@ -223,19 +224,14 @@ export default function WizardForm({ luckyNumber, onSuccess, onBack }: WizardFor
                 {f.label}
               </label>
               {f.type === "select" ? (
-                <select
+                <Select
                   id={fk}
-                  className={`fsel ${bad ? "invalid" : ""}`}
                   value={val}
-                  onChange={(e) => update(fk, e.target.value)}
-                >
-                  <option value="">Select your specialisation</option>
-                  {SPECIALISATIONS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                  options={SPECIALISATIONS}
+                  placeholder="Select your specialisation"
+                  invalid={!!bad}
+                  onChange={(v) => update(fk, v)}
+                />
               ) : (
                 <input
                   id={fk}

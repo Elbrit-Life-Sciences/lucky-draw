@@ -1,36 +1,30 @@
 import Image from "next/image";
 
-/** Native aspect ratio of the Canva logo asset (200 × 34). */
-const RATIO = 200 / 34;
+/** Native aspect ratio of the Elbrit logo asset (199 × 34). */
+const RATIO = 199 / 34;
 
 interface ElbritLogoProps {
   height?: number;
-  /**
-   * Wordmark colour variant:
-   *  - "white" (default) for the dark theme
-   *  - "navy" for light backgrounds (the original Canva export)
-   */
+  /** Kept for backwards-compatibility; no longer used. */
   variant?: "white" | "navy";
 }
 
 /**
- * Official Elbrit brand mark, sourced from Canva (Projects → Logo → "Elbrit Logo.png").
- * The white variant is the navy export recoloured for the dark landing page.
+ * Official Elbrit brand logo (same asset as the Elbrit Trendo site). The
+ * artwork is dark-on-transparent, so it sits on a white chip to stay crisp and
+ * legible on the dark theme.
  */
-export default function ElbritLogo({
-  height = 36,
-  variant = "white",
-}: ElbritLogoProps) {
-  const src = variant === "navy" ? "/elbrit-logo.png" : "/elbrit-logo-white.png";
+export default function ElbritLogo({ height = 36 }: ElbritLogoProps) {
   return (
-    <Image
-      className="elbrit-logo"
-      src={src}
-      alt="Elbrit"
-      width={Math.round(height * RATIO)}
-      height={height}
-      priority
-      style={{ height, width: "auto" }}
-    />
+    <span className="elbrit-chip">
+      <Image
+        src="/elbrit-logo-asset30.png"
+        alt="Elbrit"
+        width={Math.round(height * RATIO)}
+        height={height}
+        priority
+        style={{ height, width: "auto", display: "block" }}
+      />
+    </span>
   );
 }

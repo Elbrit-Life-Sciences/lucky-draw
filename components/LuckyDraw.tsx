@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import CellsBackground from "./CellsBackground";
+import Scene3D from "./Scene3D";
 import NumberPicker from "./NumberPicker";
 import WizardForm from "./WizardForm";
 import ThankYou from "./ThankYou";
@@ -43,7 +43,7 @@ export default function LuckyDraw() {
 
   return (
     <main className="stage">
-      <CellsBackground />
+      <Scene3D />
 
       <section className="scr" ref={(el) => { screens.current[0] = el; }}>
         <NumberPicker onLock={handleLock} />
