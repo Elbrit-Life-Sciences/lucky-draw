@@ -461,7 +461,8 @@ h1 span { color: var(--red); }
   display: block;
   font-size: 11px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.32);
+  /* full white: at 32% these washed out against the moving 3D backdrop */
+  color: #fff;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 7px;
