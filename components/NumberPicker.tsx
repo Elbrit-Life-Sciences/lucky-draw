@@ -1,29 +1,38 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import ElbritLogo from "./ElbritLogo";
 import { fireConfetti } from "@/lib/confetti";
 
 interface NumberPickerProps {
+  /** False while another screen is sliding over the picker. */
+  active: boolean;
   onLock: (n: number) => void;
 }
 
+/** The draw runs 1–99, so the entry is capped at two digits. */
+const MAX_DIGITS = 2;
+
+/** Splits the typed string across the tens / units slots. */
 function digitsFor(inp: string) {
   if (!inp) return { a: "–", b: "–", aDash: true, bDash: true, aSize: 44, bSize: 44 };
-  if (inp === "100") return { a: "10", b: "0", aDash: false, bDash: false, aSize: 36, bSize: 58 };
   if (inp.length === 1) return { a: "–", b: inp, aDash: true, bDash: false, aSize: 44, bSize: 58 };
   return { a: inp[0], b: inp[1], aDash: false, bDash: false, aSize: 58, bSize: 58 };
 }
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-export default function NumberPicker({ onLock }: NumberPickerProps) {
+export default function NumberPicker({ active, onLock }: NumberPickerProps) {
   const [inp, setInp] = useState("");
   const [locked, setLocked] = useState(false);
+  /** Transient message shown instead of the normal label when a key is refused. */
+  const [hint, setHint] = useState("");
+  const dA = useRef<HTMLDivElement>(null);
   const dB = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
+  const hintTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const n = parseInt(inp || "0", 10);
   const valid = n >= 1 && n <= 99;
@@ -31,14 +40,12 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
 
   let label = "enter your lucky number";
   let labelClass = "";
-  if (inp) {
-    if (valid) {
-      label = `number ${n} · tap lock to confirm`;
-      labelClass = "valid";
-    } else {
-      label = n > 99 ? "max is 99 · press ⌫ to fix" : "enter a valid number 1–99";
-      labelClass = "err";
-    }
+  if (hint) {
+    label = hint;
+    labelClass = "err";
+  } else if (valid) {
+    label = `number ${n} · tap lock to confirm`;
+    labelClass = "valid";
   }
 
   useGSAP(
@@ -55,29 +62,52 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
     { scope: root }
   );
 
-  function press(k: string) {
-    if (k === "back") {
-      setInp((p) => p.slice(0, -1));
+  useEffect(() => () => clearTimeout(hintTimer.current), []);
+
+  /** Refused keypress: shake the slots and explain why, briefly. */
+  const reject = useCallback((why: string) => {
+    setHint(why);
+    clearTimeout(hintTimer.current);
+    hintTimer.current = setTimeout(() => setHint(""), 1600);
+    const slots = [dA.current, dB.current].filter(Boolean);
+    if (slots.length) gsap.fromTo(slots, { x: -6 }, { x: 0, duration: 0.07, repeat: 3, yoyo: true, ease: "none" });
+  }, []);
+
+  const press = useCallback(
+    (k: string) => {
+      if (locked) return;
+      clearTimeout(hintTimer.current);
+      setHint("");
+
+      if (k === "back") {
+        if (!inp) return;
+        // the digit being removed is always the one in the units slot
+        setInp(inp.slice(0, -1));
+        if (dB.current)
+          gsap.fromTo(dB.current, { scale: 1.12 }, { scale: 1, duration: 0.18, ease: "back.out(2)" });
+        return;
+      }
+
+      if (inp.length >= MAX_DIGITS) {
+        reject("two digits max · press ⌫ to edit");
+        return;
+      }
+      if (inp === "" && k === "0") {
+        reject("start with 1–9");
+        return;
+      }
+
+      setInp(inp + k);
+      // the new digit always lands in the units slot, so that's what pops
       if (dB.current)
-        gsap.fromTo(dB.current, { scale: 1.1 }, { scale: 1, duration: 0.18, ease: "back.out(2)" });
-      return;
-    }
-    let changed = false;
-    setInp((prev) => {
-      if (prev.length >= 3) return prev;
-      if (prev === "" && k === "0") return prev;
-      const next = prev + k;
-      if (parseInt(next, 10) > 99) return prev;
-      changed = true;
-      return next;
-    });
-    if (changed && dB.current)
-      gsap.fromTo(
-        dB.current,
-        { scale: 1.2, rotationX: -15 },
-        { scale: 1, rotationX: 0, duration: 0.22, ease: "back.out(2.5)" }
-      );
-  }
+        gsap.fromTo(
+          dB.current,
+          { scale: 1.2, rotationX: -15 },
+          { scale: 1, rotationX: 0, duration: 0.22, ease: "back.out(2.5)" }
+        );
+    },
+    [inp, locked, reject]
+  );
 
   function lock() {
     if (!valid || locked) return;
@@ -87,6 +117,37 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
     fireConfetti();
     setTimeout(() => onLock(n), 1500);
   }
+
+  // Coming back from the form: the picker was never unmounted, so clear the
+  // lock state or the "Locked in" popup would still be sitting on top of it.
+  useEffect(() => {
+    if (active) setLocked(false);
+  }, [active]);
+
+  // Physical keyboard: digits type, Backspace deletes, Enter locks. No dep
+  // array on purpose — `press`/`lock` close over the current input, and this
+  // only rebinds one listener per render.
+  useEffect(() => {
+    if (!active || locked) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // never steal keystrokes from a field the user is typing in
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.key >= "0" && e.key <= "9") {
+        e.preventDefault();
+        press(e.key);
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        e.preventDefault();
+        press("back");
+      } else if (e.key === "Enter" && valid) {
+        e.preventDefault();
+        lock();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   return (
     <div className="pick" ref={root}>
@@ -105,7 +166,7 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
       <div className="ndisplay pick-anim">
         <div className="slot-wrap">
           <div className="dslot">
-            <div className={`dface ${d.aDash ? "dash" : ""}`} style={{ fontSize: d.aSize }}>
+            <div ref={dA} className={`dface ${d.aDash ? "dash" : ""}`} style={{ fontSize: d.aSize }}>
               {d.a}
             </div>
           </div>
@@ -121,7 +182,9 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
         </div>
       </div>
 
-      <p className={`nlabel pick-anim ${labelClass}`}>{label}</p>
+      <p className={`nlabel pick-anim ${labelClass}`} aria-live="polite">
+        {label}
+      </p>
 
       <div className="kpad pick-anim">
         <div className="kgrid">
@@ -130,11 +193,16 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
               {k}
             </button>
           ))}
-          <span className="k kgap" aria-hidden="true" />
-          <button className="k kn" onClick={() => press("0")} type="button">
+          <button className="k kn k0" onClick={() => press("0")} type="button">
             0
           </button>
-          <button className="k kdel" onClick={() => press("back")} type="button" aria-label="Delete">
+          <button
+            className={`k kdel ${inp ? "" : "dim"}`}
+            onClick={() => press("back")}
+            type="button"
+            aria-label="Delete"
+            disabled={!inp}
+          >
             &#9003;
           </button>
         </div>

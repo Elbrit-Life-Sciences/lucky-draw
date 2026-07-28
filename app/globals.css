@@ -269,14 +269,19 @@ h1 span { color: var(--red); }
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
 }
 .kn:hover { background: rgba(255, 255, 255, 0.12); }
+/* 0 fills the two cells SPIN and its neighbour used to occupy, so the pad has
+   no gap and the bottom row reads as one balanced row */
+.k0 { grid-column: span 2; }
 .kdel {
   font-size: 20px;
   color: rgba(255, 255, 255, 0.45);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
-/* empty cell that keeps 0 centred now that SPIN is gone */
-.kgap { background: none; border: none; pointer-events: none; }
+.kdel:hover:not(.dim) { background: rgba(255, 255, 255, 0.08); }
+/* nothing to delete yet — visible but clearly inert */
+.kdel.dim { color: rgba(255, 255, 255, 0.16); cursor: default; }
+.kdel.dim:active { transform: none; }
 
 /* ─── Primary / ghost buttons ──────────────────────────── */
 .btn-primary {

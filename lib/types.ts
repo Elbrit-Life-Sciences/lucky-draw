@@ -25,6 +25,7 @@ export const SPECIALISATIONS = [
   "Oncologist",
   "Orthopaedic Surgeon",
   "Paediatrician",
+  "Post Graduate",
   "Psychiatrist",
   "Pulmonologist",
   "Radiologist",

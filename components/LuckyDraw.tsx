@@ -46,7 +46,9 @@ export default function LuckyDraw() {
       <Scene3D />
 
       <section className="scr" ref={(el) => { screens.current[0] = el; }}>
-        <NumberPicker onLock={handleLock} />
+        {/* stays mounted while the other screens slide over it, so it needs to
+            know when it's the visible one */}
+        <NumberPicker active={screen === 0} onLock={handleLock} />
       </section>
 
       <section className="scr" ref={(el) => { screens.current[1] = el; }}>
