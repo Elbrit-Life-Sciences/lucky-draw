@@ -36,6 +36,10 @@ body {
   color: var(--txt);
   font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Samsung Internet / Chrome on large phones auto-inflate text, which blew up
+     the dropdown rows and pushed the list off-screen. Pin it to 100%. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 button {
@@ -271,15 +275,8 @@ h1 span { color: var(--red); }
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
-.kspin {
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: #fff;
-  background: var(--red);
-  box-shadow: 0 0 20px rgba(225, 27, 34, 0.45);
-}
-.kspin:hover { background: var(--red-dark); }
+/* empty cell that keeps 0 centred now that SPIN is gone */
+.kgap { background: none; border: none; pointer-events: none; }
 
 /* ─── Primary / ghost buttons ──────────────────────────── */
 .btn-primary {
@@ -541,7 +538,9 @@ h1 span { color: var(--red); }
   left: 0;
   right: 0;
   z-index: 60;
-  max-height: min(280px, 50vh);
+  /* max-height is set inline from the measured viewport space (see Select.tsx);
+     this is only the fallback before the first measure. */
+  max-height: 264px;
   overflow-y: auto;
   padding: 6px;
   list-style: none;
@@ -551,11 +550,34 @@ h1 span { color: var(--red); }
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  /* keep the scrollbar permanently visible so it's obvious the list scrolls */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(225, 27, 34, 0.75) rgba(255, 255, 255, 0.06);
+}
+/* flipped above the trigger when there isn't room below */
+.csel-list.up {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+.csel-list::-webkit-scrollbar { width: 6px; }
+.csel-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  margin: 6px 0;
+}
+.csel-list::-webkit-scrollbar-thumb {
+  background: rgba(225, 27, 34, 0.75);
+  border-radius: 6px;
 }
 .csel-opt {
-  padding: 12px 12px;
+  /* fixed row metrics: Samsung Internet's font boosting was inflating these */
+  padding: 11px 12px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
   border-radius: 9px;
   font-size: 15px;
+  line-height: 1.2;
   color: #fff;
   cursor: pointer;
   transition: background 0.15s;

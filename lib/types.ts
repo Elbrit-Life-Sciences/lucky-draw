@@ -17,6 +17,7 @@ export const SPECIALISATIONS = [
   "General Physician",
   "Cardiologist",
   "Dermatologist",
+  "Diabetologist",
   "ENT Specialist",
   "Gastroenterologist",
   "Gynaecologist",

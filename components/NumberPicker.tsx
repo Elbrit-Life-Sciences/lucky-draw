@@ -21,9 +21,7 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 export default function NumberPicker({ onLock }: NumberPickerProps) {
   const [inp, setInp] = useState("");
-  const [spinning, setSpinning] = useState(false);
   const [locked, setLocked] = useState(false);
-  const dA = useRef<HTMLDivElement>(null);
   const dB = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
 
@@ -31,11 +29,9 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
   const valid = n >= 1 && n <= 99;
   const d = digitsFor(inp);
 
-  let label = "enter or spin your lucky number";
+  let label = "enter your lucky number";
   let labelClass = "";
-  if (spinning) {
-    label = "spinning…";
-  } else if (inp) {
+  if (inp) {
     if (valid) {
       label = `number ${n} · tap lock to confirm`;
       labelClass = "valid";
@@ -60,7 +56,6 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
   );
 
   function press(k: string) {
-    if (spinning) return;
     if (k === "back") {
       setInp((p) => p.slice(0, -1));
       if (dB.current)
@@ -85,84 +80,12 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
   }
 
   function lock() {
-    if (!valid || spinning || locked) return;
+    if (!valid || locked) return;
     // show the "locked in" popup + full-page confetti, then hold long enough
     // for the rain to play before sliding to the form
     setLocked(true);
     fireConfetti();
     setTimeout(() => onLock(n), 1500);
-  }
-
-  function spin() {
-    if (spinning || !dA.current || !dB.current) return;
-    setSpinning(true);
-    setInp("");
-    const elA = dA.current;
-    const elB = dB.current;
-    const target = Math.floor(Math.random() * 99) + 1;
-    const ts = target.toString().padStart(2, "0");
-    const D = "0123456789";
-    let step = 0;
-    const total = 24;
-
-    gsap.to([elA, elB], { x: 5, duration: 0.05, repeat: 5, yoyo: true, ease: "none", onComplete: tick });
-
-    function tick() {
-      const isFinal = step >= total - 1;
-      const delay = step < 10 ? 65 : step < 17 ? 115 : 200;
-
-      gsap.to(elA, {
-        rotationX: 90,
-        duration: 0.04,
-        onComplete: () => {
-          elA.style.fontSize = "58px";
-          elA.textContent = isFinal ? ts[0] : D[Math.floor(Math.random() * 10)];
-          elA.classList.remove("dash");
-          gsap.to(elA, { rotationX: 0, duration: 0.04 });
-        },
-      });
-      gsap.to(elB, {
-        rotationX: 90,
-        duration: 0.04,
-        delay: 0.018,
-        onComplete: () => {
-          elB.style.fontSize = "58px";
-          elB.textContent = isFinal ? ts[1] : D[Math.floor(Math.random() * 10)];
-          elB.classList.remove("dash");
-          gsap.to(elB, { rotationX: 0, duration: 0.04 });
-        },
-      });
-
-      step++;
-      if (!isFinal) {
-        setTimeout(tick, delay);
-      } else {
-        setTimeout(() => {
-          gsap
-            .timeline()
-            .to([elA, elB], {
-              color: "#FFD700",
-              textShadow: "0 0 28px rgba(255,215,0,.95), 0 0 55px rgba(255,215,0,.5)",
-              duration: 0.22,
-            })
-            .to([elA, elB], { scale: 1.3, duration: 0.15, ease: "power2.out" })
-            .to([elA, elB], { scale: 1, duration: 0.45, ease: "elastic.out(1,.5)" })
-            .to(
-              [elA, elB],
-              {
-                color: "#fff",
-                textShadow: "0 0 18px rgba(225,27,34,.85), 0 0 38px rgba(225,27,34,.38)",
-                duration: 0.4,
-                onComplete: () => {
-                  setInp(target.toString());
-                  setSpinning(false);
-                },
-              },
-              "-=.3"
-            );
-        }, 180);
-      }
-    }
   }
 
   return (
@@ -182,7 +105,7 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
       <div className="ndisplay pick-anim">
         <div className="slot-wrap">
           <div className="dslot">
-            <div ref={dA} className={`dface ${d.aDash ? "dash" : ""}`} style={{ fontSize: d.aSize }}>
+            <div className={`dface ${d.aDash ? "dash" : ""}`} style={{ fontSize: d.aSize }}>
               {d.a}
             </div>
           </div>
@@ -207,20 +130,18 @@ export default function NumberPicker({ onLock }: NumberPickerProps) {
               {k}
             </button>
           ))}
-          <button className="k kdel" onClick={() => press("back")} type="button" aria-label="Delete">
-            &#9003;
-          </button>
+          <span className="k kgap" aria-hidden="true" />
           <button className="k kn" onClick={() => press("0")} type="button">
             0
           </button>
-          <button className="k kspin" onClick={spin} type="button">
-            SPIN
+          <button className="k kdel" onClick={() => press("back")} type="button" aria-label="Delete">
+            &#9003;
           </button>
         </div>
       </div>
 
       <button
-        className={`btn-primary pick-anim ${valid && !spinning && !locked ? "on" : "off"}`}
+        className={`btn-primary pick-anim ${valid && !locked ? "on" : "off"}`}
         onClick={lock}
         type="button"
       >
